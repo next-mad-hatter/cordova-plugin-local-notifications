@@ -47,20 +47,22 @@ import java.util.Set;
 
 import static android.app.AlarmManager.RTC;
 import static android.app.AlarmManager.RTC_WAKEUP;
-import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.M;
 import static android.support.v4.app.NotificationCompat.PRIORITY_HIGH;
 import static android.support.v4.app.NotificationManagerCompat.IMPORTANCE_MIN;
 import static android.support.v4.app.NotificationManagerCompat.IMPORTANCE_LOW;
 import static android.support.v4.app.NotificationManagerCompat.IMPORTANCE_MAX;
 import static android.support.v4.app.NotificationManagerCompat.IMPORTANCE_HIGH;
 
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+
 /**
  * Wrapper class around OS notification class. Handles basic operations
  * like show, delete, cancel for a single local notification instance.
  */
 public final class Notification {
+
+    private final int FLAG_CANCEL_CURRENT = VERSION.SDK_INT >= VERSION_CODES.M ? PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_CANCEL_CURRENT;
 
     // Used to differ notifications by their life cycle state
     public enum Type {
@@ -228,7 +230,7 @@ public final class Notification {
                         mgr.setExact(RTC, time, pi);
                         break;
                     case IMPORTANCE_MAX: case IMPORTANCE_HIGH:
-                        if (SDK_INT >= M) {
+                        if (VERSION.SDK_INT >= VERSION_CODES.M) {
                             mgr.setExactAndAllowWhileIdle(RTC_WAKEUP, time, pi);
                         } else {
                             mgr.setExact(RTC, time, pi);
@@ -306,8 +308,9 @@ public final class Notification {
         for (String action : actions) {
             Intent intent = new Intent(action);
 
+            int flag = VERSION.SDK_INT >= VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0;
             PendingIntent pi = PendingIntent.getBroadcast(
-                    context, 0, intent, 0);
+                    context, 0, intent, flag);
 
             if (pi != null) {
                 getAlarmMgr().cancel(pi);

@@ -52,6 +52,9 @@ import de.appplant.cordova.plugin.notification.action.ActionGroup;
 import static de.appplant.cordova.plugin.notification.Notification.Type.SCHEDULED;
 import static de.appplant.cordova.plugin.notification.Notification.Type.TRIGGERED;
 
+import android.os.Build.VERSION;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * This plugin utilizes the Android AlarmManager in combination with local
  * notifications. When a local notification is scheduled the alarm manager takes
@@ -126,6 +129,28 @@ public class LocalNotification extends CordovaPlugin {
         if (action.equals("launch")) {
             launch(command);
             return true;
+        }
+
+        if(VERSION.SDK_INT >= 33) {
+            String permission = "android.permission.POST_NOTIFICATIONS";
+            try {
+                CordovaPlugin plugin = this;
+                cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        String[] permissions = new String[]{permission};
+                        try {
+                            java.lang.reflect.Method method = cordova.getClass().getMethod("requestPermissions", org.apache.cordova.CordovaPlugin.class ,int.class, java.lang.String[].class);
+                            method.invoke(cordova, plugin, 42, permissions);
+                        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                        }
+                    }
+                });
+                java.lang.reflect.Method method = cordova.getClass().getMethod("hasPermission", permission.getClass());
+                Boolean res = (Boolean) method.invoke(cordova, permission);
+                if (!res.booleanValue()) return false;
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+              return false;
+            }
         }
 
         cordova.getThreadPool().execute(new Runnable() {

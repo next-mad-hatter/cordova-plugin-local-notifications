@@ -32,12 +32,14 @@ import android.support.v4.app.NotificationCompat.MessagingStyle.Message;
 import android.support.v4.media.app.NotificationCompat.MediaStyle;
 import android.support.v4.media.session.MediaSessionCompat;
 
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+
 import java.util.List;
 import java.util.Random;
 
 import de.appplant.cordova.plugin.notification.action.Action;
 
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static de.appplant.cordova.plugin.notification.Notification.EXTRA_UPDATE;
 
 /**
@@ -45,6 +47,8 @@ import static de.appplant.cordova.plugin.notification.Notification.EXTRA_UPDATE;
  * notification specified by JSON object passed from JS side.
  */
 public final class Builder {
+
+    private final int FLAG_UPDATE_CURRENT = VERSION.SDK_INT >= VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT;
 
     // Application context passed by constructor
     private final Context context;
